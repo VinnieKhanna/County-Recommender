@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+	<title>Welcome</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+	<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename = 'main.css')}}">
+
+</head>
+<body style="background-color:#56baed;">
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<div class="main fadeInDown" id="welcomePage" style="padding-bottom: 30px">
+		<div class="container">
+		  <div class="row">
+			<div class="col-sm-3">
+				<h1 style="margin-top: 20px;">Hi, {{name}}</h1>
+			</div>
+			<div class="col-sm-8"></div>
+			<div class="col-sm-1">
+				<form action="{{ url_for('restart') }}" class="align-middle" method="GET">
+					<input name="LOGOUT" class="btn btn-link align-middle ignore" type="submit" value="Log Out" style="margin-top: 20px;">
+				</form>
+			</div>
+		  </div>
+		</div>
+		<hr style="width: 90%">
+		<div id="welcomeContent">
+		<table class="table table-sm" id="tableContent" style="margin-top: 30px;">
+			<thead class="thead-dark">
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col">Project Name</th>
+					<th scope="col">Category</th>
+					<th scope="col">Currency</th>
+					<th scope="col">Goal</th>
+					<th scope="col">Pledged</th>
+					<th scope="col">Backers</th>
+					<th scope="col">Result</th>
+					<th scope="col">Delete</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% set count = namespace(value=1) %}
+				{% if project | length > 0 %}
+				{% for key, value in project.items() %}
+				<tr class="align-middle">
+					<th scope="row" class="align-middle">{{count.value}}</th>
+					<td class="align-middle">{{ key }}</td>
+					<td class="align-middle">{{value[1]}}</td>
+					<td class="align-middle">{{value[2]}}</td>
+					<td class="align-middle">{{value[3]}}</td>
+					<td class="align-middle">{{value[4]}}</td>
+					<td class="align-middle">{{value[5]}}</td>
+					<td class="align-middle">{{value[0]}}</td>
+					<td><button type="submit" class="btn btn-default btn-lg delete"><ion-icon name="trash-outline"></ion-icon></button></td>
+					{% set count.value = count.value + 1 %}
+				</tr>
+				{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+		<script type="module">
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
+
+			const firebaseConfig = {
+				apiKey: "AIzaSyDCf7OOdraXEioeDZZLxYvzjeyaq3c0Qwg",
+				authDomain: "kickstarteranalyzer.firebaseapp.com",
+				databaseURL: "https://kickstarteranalyzer-default-rtdb.firebaseio.com",
+				projectId: "kickstarteranalyzer",
+				storageBucket: "kickstarteranalyzer.appspot.com",
+				messagingSenderId: "287432238497",
+				appId: "1:287432238497:web:a23a4d95232f3fd84c97e0"
+			};
+
+			const app = initializeApp(firebaseConfig);
+			import {getDatabase, ref, remove, child} from "https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js"
+			const db = getDatabase();
+			var uid = "{{user_id}}";
+
+			$('table').on('click','.delete',function(){
+				$(this).parents('tr').remove();
+				var currentRow = $(this).closest("tr");
+				var proj = currentRow.find("td:eq(0)").text();
+				var path = "users/"+uid+"/projects/"+proj;
+				remove(ref(db, path)).then(()=>{
+						alert("Project successfully removed!");
+					}).catch((error)=>{
+						alert("Project removal was unsuccessful, error: "+error);
+				});
+				setTimeout("location.reload(true);", 500);
+			});
+		</script>
+		<form action = "{{ url_for('new') }}" method="GET">
+			<input name="Analyze New Project" class="btn btn-primary newProject ignore" type="submit" value="Analyze New Project">
+		</form>
+	</div>
+	</div>
+</body>
+</html>
