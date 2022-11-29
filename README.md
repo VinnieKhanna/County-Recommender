@@ -1,7 +1,18 @@
-To run our code locally:
-- Clone the GitHub repository from the following link:
-	https://github.com/mknilesh/KickstarterAnalyzer.git
-- Run the following command in the terminal:
+## Setup Instructions
+  1. Clone the GitHub repository: `git clone
+	https://github.com/mknilesh/CS6220Workspace`
+### Backend Setup
+2. `cd CS6220WORKSPACE/backend`
+3. `py install.py` - if you get some dependency errors ignore them for now
+4. `py src/application.py` - starts Flask server. This is the file you want to edit if you're doing the algorithm work (Vedic and Srajan).
+
+### Frontend Setup
+5. `cd ../frontend`
+6. `npm install`
+7. `npm run start` - starts up frontend at localhost:3000. Frontend folks should mostly be working in `src/components` and `src/App.js`. 
+
+
+<s> - Run the following command in the terminal:
 	python3 install.py
 - Afterwards, cd into the src folder using the following command:
 	cd src
@@ -22,4 +33,4 @@ There are two options for the last steps:
             jupyter notebook webApp.ipynb
     - Run all the cells in the notebook
     - On your chrome browser, open the following link:
-            http://127.0.0.1:5000
+            http://127.0.0.1:5000 </s>
