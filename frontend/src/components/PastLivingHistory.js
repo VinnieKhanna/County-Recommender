@@ -1,15 +1,20 @@
+// React, Router Imports
 import { useNavigate } from "react-router";
+
+// MUI Imports
+import { Typography, Button, Box } from "@mui/material";
 
 export default function PastLivingHistory() {
     const navigate = useNavigate();
     return (
-        <>
-            <h1>
+        <Box sx={{mt: "2em"}}>
+            <Typography variant="h3" gutterBottom>
                 Past Living History Page
-            </h1>
-            <button onClick={() => navigate("/recommendations")}>
+            </Typography>
+            <br/>
+            <Button variant="outlined" onClick={() => navigate("/recommendations")}>
                 Compile Recommendations
-            </button>
-        </>
+            </Button>
+        </Box>
     )
 }

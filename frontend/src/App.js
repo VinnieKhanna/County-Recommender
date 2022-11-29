@@ -1,11 +1,19 @@
+// Asset Imports
 import logo from './logo.svg';
 import './App.css';
+
+// React, Router Imports
 import { useEffect, useState } from 'react';
 import { Routes, Route } from "react-router-dom";
 import { useNavigate } from "react-router";
+
+// Our Component Imports
 import InfoCollection from './components/InfoCollection';
 import PastLivingHistory from './components/PastLivingHistory';
 import Recommendations from './components/Recommendations';
+
+// MUI Imports
+import Button from '@mui/material/Button';
 
 function App() {
 
@@ -46,9 +54,9 @@ function Home() {
         >
           {txt}
         </a>
-        <button onClick={() => navigate("info-collection")}> 
+        <Button sx={{mt: "10px"}} variant="contained" onClick={() => navigate("info-collection")}> 
           Info Collection
-        </button>
+        </Button>
       </header>
       </div>
   )
