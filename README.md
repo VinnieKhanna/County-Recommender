@@ -33,4 +33,4 @@ There are two options for the last steps:
             jupyter notebook webApp.ipynb
     - Run all the cells in the notebook
     - On your chrome browser, open the following link:
-            http://127.0.0.1:5000 </s>
+            http://127.0.0.1:5000 </s> 
