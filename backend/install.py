@@ -11,6 +11,7 @@ if __name__ == '__main__':
     install('seaborn')
     install('imblearn')
     install('scikit-learn')
+    install('scipy')
     install('flask')
     install('Authlib')
     install('Pyrebase4')
