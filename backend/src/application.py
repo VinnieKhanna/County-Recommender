@@ -1,25 +1,60 @@
 # %%
 import os
 import numpy as np
+import pandas as pd
 import flask
 import pickle
 import json
 import requests
-from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
+from flask import Flask, flash, redirect, render_template, request, Response, session, abort, url_for, jsonify
 import pyrebase
 from collections import Counter
 from dataProcessing import cleanNull, getHeatMap, oversampling, splitTestTrainData
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
 import pickle
+import ast
 
 application = Flask(__name__, template_folder='html')
+
+# Load county data into memory at runtime to make request time quicker
+states_counties_df = pd.read_csv("../dataCollection/States&Counties.csv").set_index("State")
+states_counties_dict = states_counties_df.to_dict()["Area_name"]
+state_abbrevs = list(states_counties_dict.keys())
 
 # Test Frontend Connection
 @application.route("/test")
 def test():
     return "Hi from Flask server"
+
+# Will use this to compile recommendations per user
+# Receive user id, query firebase for preference/living history data, compile recommendation
+@application.route("/get_recommendations", methods=["POST"])
+def get_recommendations():
+    user_id = request.args.get("user_id")
+    if user_id is None:
+        return Response("Missing required query param 'user_id", status=422)
+    return
+
+# Will use this to insert user and their prefs into Firebase
+@application.route("/insert_user", methods=["POST"]) 
+def insert_user():
+    return
+
+# Will use this to insert user rating for their recommendations
+@application.route("/add_user_rating", methods=["POST"])
+def add_rating():
+    return
+
+# Helper route to get the counties associated with a state abbreviation
+# Helpful for populating Select/Dropdowns on frontend
+@application.route("/get_counties", methods=["GET"])
+def get_counties():
+    state = request.args.get("state")
+    if state is None:
+        return Response("Missing required query param 'state'", status=422)
+    counties = states_counties_dict[state]
+    return jsonify(ast.literal_eval(counties))
+
+
 
 # dataSrc1 = 'data/ks-projects-201612.csv'
 # dataSrc2 = 'data/ks-projects-201801.csv'
