@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 
 // React, Router Imports
+import React from 'react'
 import { useEffect, useState } from 'react';
 import { Routes, Route } from "react-router-dom";
 import { useNavigate } from "react-router";
