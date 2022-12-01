@@ -11,6 +11,8 @@
 6. `npm install`
 7. `npm run start` - starts up frontend at localhost:3000. Frontend folks should mostly be working in `src/components` and `src/App.js`. 
 
+## Firebase Setup
+Everyone will need to make a credential file locally for firebase since it doesn't belong in version control. Just go to the project > settings > service accounts > generate new private key. Rename the downloaded file to `firebase-secrets.json` and move it to the `backend/src` directory.
 
 <s> - Run the following command in the terminal:
 	python3 install.py

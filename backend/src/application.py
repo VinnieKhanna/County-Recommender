@@ -2,24 +2,56 @@
 import os
 import numpy as np
 import pandas as pd
-import flask
 import pickle
 import json
 import requests
 from flask import Flask, flash, redirect, render_template, request, Response, session, abort, url_for, jsonify
-import pyrebase
+from flask_jwt import JWT, jwt_required, current_identity
 from collections import Counter
-from dataProcessing import cleanNull, getHeatMap, oversampling, splitTestTrainData
 import pickle
 import ast
+import firebase_admin
+from firebase_admin import credentials, firestore
 
+# Initialize Flask App
 application = Flask(__name__, template_folder='html')
 
+filedir = os.path.dirname(os.path.abspath(__file__))
+
+# Initialize Cloud Firestore
+cred = credentials.Certificate(f"{filedir}/firebase-secrets.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 # Load county data into memory at runtime to make request time quicker
-states_counties_df = pd.read_csv("../dataCollection/States&Counties.csv").set_index("State")
+csv_path = os.path.join(filedir, "../../dataCollection/States&Counties.csv")
+states_counties_df = pd.read_csv(csv_path).set_index("State")
 states_counties_dict = states_counties_df.to_dict()["Area_name"]
 state_abbrevs = list(states_counties_dict.keys())
 
+# Flask authentication functions
+# Firebase users table is indexed/identified by username
+def authenticate(username, password):
+    user = get_doc(collection = "users", doc_name = username)
+    if user and user.password.encode('utf-8') == password.encode('utf-8'):
+        return user
+
+def identity(payload):
+    user_id = payload['identity']
+    return get_doc(collection = "users", doc_name = user_id)
+
+jwt = JWT(application, authenticate, identity)
+
+# Helper to get a firebase document from a collection
+def get_doc(collection, doc_name):
+    doc = db.collection(collection).document(doc_name).get()
+    if doc.exists:
+        return doc
+    else:
+        return None
+
+
+######### HTTP Routes ############
 # Test Frontend Connection
 @application.route("/test")
 def test():
@@ -28,16 +60,26 @@ def test():
 # Will use this to compile recommendations per user
 # Receive user id, query firebase for preference/living history data, compile recommendation
 @application.route("/get_recommendations", methods=["POST"])
+@jwt_required()
 def get_recommendations():
-    user_id = request.args.get("user_id")
-    if user_id is None:
-        return Response("Missing required query param 'user_id", status=422)
+    # insecure to rely on body for user id (could get other users' recs): 
+    # user_id = request.args.get("user_id")
+    # instead use flask-jwt's current_identity:
+    if current_identity is None:
+        return Response("Could not identify user", status=401)
     return
 
 # Will use this to insert user and their prefs into Firebase
 @application.route("/insert_user", methods=["POST"]) 
 def insert_user():
-    return
+    username = request.form.username
+    password = request.form.password
+    # If username already exists in db
+    if get_doc(collection = "users", doc_name = username) is not None:
+        return Response("Duplicate username exists, try logging in?", status=409)
+    else:
+        db.collection('users').document(username).set({"password" : password})
+
 
 # Will use this to insert user rating for their recommendations
 @application.route("/add_user_rating", methods=["POST"])
@@ -53,6 +95,7 @@ def get_counties():
         return Response("Missing required query param 'state'", status=422)
     counties = states_counties_dict[state]
     return jsonify(ast.literal_eval(counties))
+
 
 
 
@@ -81,14 +124,16 @@ def get_counties():
 #     pickle.dump(knn, open("knn_model.pkl", "wb"))
 
 # config = {
-#     "apiKey": "AIzaSyDCf7OOdraXEioeDZZLxYvzjeyaq3c0Qwg",
-#     "authDomain": "kickstarteranalyzer.firebaseapp.com",
-#     "projectId": "kickstarteranalyzer",
-#     "storageBucket": "kickstarteranalyzer.appspot.com",
-#     "messagingSenderId": "287432238497",
-#     "appId": "1:287432238497:web:a23a4d95232f3fd84c97e0",
+#     "apiKey": "AIzaSyCTuA7_uI-IE8ebetQwcVlt6txTT9L10-A",
+#     "authDomain": "county-recommender.firebaseapp.com",
+#     "projectId": "county-recommender",
+#     "storageBucket": "county-recommender.appspot.com",
+#     "messagingSenderId": "513833026552",
+#     "appId": "1:513833026552:web:74b69d7d8e5199c9a5cc0d",
 #     "databaseURL": 'https://kickstarteranalyzer-default-rtdb.firebaseio.com/'
 # }
+  
+#   measurementId: "G-RP5MPEVZ9E"
 # firebase = pyrebase.initialize_app(config)
 # auth = firebase.auth()
 # db = firebase.database()

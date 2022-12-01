@@ -11,6 +11,8 @@ import { useNavigate } from "react-router";
 import InfoCollection from './components/InfoCollection';
 import PastLivingHistory from './components/PastLivingHistory';
 import Recommendations from './components/Recommendations';
+import SignUp from './components/SignUp';
+import Login from './components/Login';
 
 // MUI Imports
 import Button from '@mui/material/Button';
@@ -21,6 +23,8 @@ function App() {
     <div className="App">
       <Routes>
         <Route exact path="/" element={<Home />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/info-collection" element={<InfoCollection />} />
         <Route path="/past-counties" element={<PastLivingHistory />} />
         <Route path="/recommendations" element={<Recommendations />} />
