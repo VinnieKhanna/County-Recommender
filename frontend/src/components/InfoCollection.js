@@ -1,24 +1,17 @@
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
 
 // MUI Imports
 import * as React from 'react';
 import { Typography, Button, Box, Grid, FormControl, TextField, Slider } from "@mui/material";
-import { createTheme, ThemeProvider} from '@mui/material/styles';
+import { createTheme} from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import SendIcon from '@mui/icons-material/Send';
 import InfoIcon from '@mui/icons-material/Info';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
 import MenuItem from '@mui/material/MenuItem';
 
 const sliderTitle = createTheme({
@@ -27,7 +20,7 @@ const sliderTitle = createTheme({
     },
   });
   
-function valuetext(value: number) {
+function valuetext(value) {
     return `${value}`;
 }
 
