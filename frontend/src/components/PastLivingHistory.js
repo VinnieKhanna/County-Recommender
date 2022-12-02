@@ -10,16 +10,11 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import AppBar from '@mui/material/AppBar';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import MenuIcon from '@mui/icons-material/Menu';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import Container from '@mui/material/Container';
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -92,93 +87,75 @@ export default function PastLivingHistory() {
       }
     }
     return (
-      <div>
-            <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            County Recommender
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Box>
-                <Box sx={{mt: "2em"}}>
+      <div>   
+        <Box sx={{mt: "2em"}}>
             <Typography variant="h3" gutterBottom>
                 Past Living History
             </Typography>
             <br/>
         </Box>
 
-<Box>
-<TableContainer component={Paper}>
-      <Table sx={{ minWidth: 500 }} aria-label="customized table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>State</StyledTableCell>
-            <StyledTableCell>County</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <StyledTableRow key={row.state}>
-              <StyledTableCell component="th" scope="row">
-                {row.state}
-              </StyledTableCell>
-              <StyledTableCell>{row.county}</StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </Box>
-  <br></br>
-<Box>
-<form noValidate autoComplete="off" onSubmit={handleSubmit}>
-<Stack 
-direction="row" 
-alignItems="center" 
-justifyContent="center"
-spacing={2}>
-      <TextField onChange={(e) => setState(e.target.value)} 
-      label="State"
-      value={state} 
-      variant="outlined"
-      required
-      error = {stateError} />
+        <Box>
+        <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 500 }} aria-label="customized table">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>State</StyledTableCell>
+                    <StyledTableCell>County</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rows.map((row) => (
+                    <StyledTableRow key={row.state}>
+                      <StyledTableCell component="th" scope="row">
+                        {row.state}
+                      </StyledTableCell>
+                      <StyledTableCell>{row.county}</StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        <br></br>
+        <Box>
+        <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+        <Stack 
+        direction="row" 
+        alignItems="center" 
+        justifyContent="center"
+        spacing={2}>
+              <TextField onChange={(e) => setState(e.target.value)} 
+              label="State"
+              value={state} 
+              variant="outlined"
+              required
+              error = {stateError} />
 
-      <TextField onChange={(e) => setCounty(e.target.value)}  
-      label="County"
-      value={county} 
-      variant="outlined"
-      required
-      error = {countyError} /> 
+              <TextField onChange={(e) => setCounty(e.target.value)}  
+              label="County"
+              value={county} 
+              variant="outlined"
+              required
+              error = {countyError} /> 
 
-      <Button 
-      variant="contained"
-      size = "large"
-      sx={{ mt: 1 }}
-      onClick={() => handleSubmit()}>                +
-      </Button>
-      </Stack>
-      </form>
-      </Box>
-      <br></br>
-  <Button 
-  variant="contained"
-  size = "large"
-  onClick={() => navigate("/recommendations")}>
-  Submit Living History
-  </Button>
-  </div>
+              <Button 
+              variant="contained"
+              size = "large"
+              sx={{ mt: 1 }}
+              onClick={() => handleSubmit()}>                +
+              </Button>
+              </Stack>
+              </form>
+              </Box>
+              <br></br>
+          <Button 
+          variant="contained"
+          size = "large"
+          onClick={() => navigate("/recommendations")}>
+          Submit Living History
+          </Button>
+      </div>
 
     );
   }
