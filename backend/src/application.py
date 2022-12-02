@@ -15,6 +15,7 @@ from firebase_admin import credentials, firestore
 
 # Initialize Flask App
 application = Flask(__name__, template_folder='html')
+application.config['SECRET_KEY'] = 'secret'
 
 filedir = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,7 +34,7 @@ state_abbrevs = list(states_counties_dict.keys())
 # Firebase users table is indexed/identified by username
 def authenticate(username, password):
     user = get_doc(collection = "users", doc_name = username)
-    if user and user.password.encode('utf-8') == password.encode('utf-8'):
+    if user and user.get("password").encode('utf-8') == password.encode('utf-8'):
         return user
 
 def identity(payload):
@@ -72,13 +73,20 @@ def get_recommendations():
 # Will use this to insert user and their prefs into Firebase
 @application.route("/insert_user", methods=["POST"]) 
 def insert_user():
-    username = request.form.username
-    password = request.form.password
+    args = request.form.to_dict()
+    try:
+        username = args['username']
+        password = args['password']
+    except KeyError:
+        return Response("Missing user/pass", status=422)
+    if len(username) < 4 or len(password) < 4:
+        return Response("user/pass too short", status=422)
     # If username already exists in db
     if get_doc(collection = "users", doc_name = username) is not None:
         return Response("Duplicate username exists, try logging in?", status=409)
     else:
         db.collection('users').document(username).set({"password" : password})
+        return Response("Insert success", status=200)
 
 
 # Will use this to insert user rating for their recommendations
