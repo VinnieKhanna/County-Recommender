@@ -1,70 +1,60 @@
 // Asset Imports
-import logo from './logo.svg';
 import './App.css';
 
 // React, Router Imports
 import { useEffect, useState } from 'react';
 import { Routes, Route } from "react-router-dom";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 // Our Component Imports
+import Header from './components/Header';
 import InfoCollection from './components/InfoCollection';
 import PastLivingHistory from './components/PastLivingHistory';
 import Recommendations from './components/Recommendations';
 import SignUp from './components/SignUp';
 import Login from './components/Login';
 
-// MUI Imports
-import Button from '@mui/material/Button';
 
 function App() {
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check HTML5 storage and restore "session" by auto-logging in
+  // Run only on app mounting (like page refresh)
+  useEffect(() => {
+    let local = localStorage["flask-jwt-token"];
+    let session = sessionStorage["flask-jwt-token"];
+    if (session) { // not null/undefined
+      setToken(session)
+    } else if (local) {
+      setToken(local)
+    } 
+    setUser(localStorage["username"]);
+
+    // On app launch, if new user navigate to login, else to info collection
+    if (location.pathname === "/") {
+      if (local || session) {
+        navigate("/info-collection")
+      } else {
+        navigate("/login")
+      }
+    }
+  }, [location.pathname, navigate])
 
   return (
     <div className="App">
+      <Header showMenu={Boolean(token)} setToken={setToken} user={user} />
       <Routes>
-        <Route exact path="/" element={<Home />} />
-        <Route path="/sign-up" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/info-collection" element={<InfoCollection />} />
-        <Route path="/past-counties" element={<PastLivingHistory />} />
-        <Route path="/recommendations" element={<Recommendations />} />
+        <Route path="/sign-up" element={<SignUp token={token} setToken={setToken} setUser={setUser} />} />
+        <Route path="/login" element={<Login token={token} setToken={setToken} setUser={setUser} />} />
+        <Route path="/info-collection" element={<InfoCollection token={token} />} />
+        <Route path="/past-counties" element={<PastLivingHistory token={token} />} />
+        <Route path="/recommendations" element={<Recommendations token={token} />} />
       </Routes>
     </div>
   );
-}
-
-function Home() {
-  const [txt, setTxt] = useState("");
-  const navigate = useNavigate();
-  useEffect(() => {
-    fetch("/test").then(async (res) => {
-      console.log(res);
-      setTxt(await res.text());
-    })
-  }, [])
-
-  return (
-    <div className="App">
-    <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {txt}
-        </a>
-        <Button sx={{mt: "10px"}} variant="contained" onClick={() => navigate("info-collection")}> 
-          Info Collection
-        </Button>
-      </header>
-      </div>
-  )
-
 }
 
 export default App;
