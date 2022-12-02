@@ -95,9 +95,20 @@ function InfoCollection(props) {
       setCostOfLivingImp(event.target.value);
     };
 
-    var preferences = [city, population, populationImp, temperature, temperatureImp, precipitationImp, unemploymentImp, educationImp, povertyImp, costOfLiving, costOfLivingImp]
-
     const handleSubmit = (event) => {
+        let preferences = [city, population, populationImp, temperature, temperatureImp, precipitationImp, unemploymentImp, educationImp, povertyImp, costOfLiving, costOfLivingImp]
+        let preferenceNames = "city, population, populationImp, temperature, temperatureImp, precipitationImp, unemploymentImp, educationImp, povertyImp, costOfLiving, costOfLivingImp".split(", ");
+        let prefObj = preferences.reduce((k, v, i) => ({ ...k, [preferenceNames[i]]: v}), {});
+        fetch("/insert_user_prefs", {
+            method: "POST",
+            body: JSON.stringify(prefObj),
+            headers: {
+                "Authorization": `JWT ${props.token}`,
+                "Content-Type": "application/json"
+            }
+        }).then(res => {
+            console.log(res);
+        })
         navigate("/past-counties")
     }
 

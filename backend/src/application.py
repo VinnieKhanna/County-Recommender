@@ -2,13 +2,12 @@
 import os
 import numpy as np
 import pandas as pd
-import pickle
+from datetime import timedelta
 import json
 import requests
 from flask import Flask, flash, redirect, render_template, request, Response, session, abort, url_for, jsonify
 from flask_jwt import JWT, jwt_required, current_identity
 from collections import Counter
-import pickle
 import ast
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -16,6 +15,7 @@ from firebase_admin import credentials, firestore
 # Initialize Flask App
 application = Flask(__name__, template_folder='html')
 application.config['SECRET_KEY'] = 'secret'
+application.config['JWT_EXPIRATION_DELTA'] = timedelta(days=7)
 
 filedir = os.path.dirname(os.path.abspath(__file__))
 
@@ -87,6 +87,13 @@ def insert_user():
     else:
         db.collection('users').document(username).set({"password" : password})
         return Response("Insert success", status=200)
+
+# Attach user prefs to existing db user
+@application.route("/insert_user_prefs", methods=["POST"])
+@jwt_required()
+def insert_user_prefs():
+    print(current_identity.id)
+    print(request.json)
 
 
 # Will use this to insert user rating for their recommendations

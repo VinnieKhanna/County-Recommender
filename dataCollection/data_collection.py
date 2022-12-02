@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import requests
+import json
 
 def clean_and_merge():
     education = pd.read_csv("Education.csv")
@@ -41,6 +41,9 @@ def get_states_and_counties():
     #return dataframe of unique state codes and lists of counties in each
     states_counties_df = counties.groupby("State").agg(list)
     states_counties_df.to_csv("States&Counties.csv")
+    states_counties_json = json.loads(states_counties_df.to_json())["Area_name"]
+    with open('States&Counties.json', 'w', encoding='utf-8') as f:
+        json.dump(states_counties_json, f, ensure_ascii=False, indent=4)
     return states_counties_df
 
 
