@@ -74,27 +74,10 @@ def get_recommendations():
     prefs = doc.get("prefs")
 
     print(living_history, prefs) # here's your data srajan & vedic :)
-
-    city_name = ""
     
-    recommendations = cosine_distance_calculator("", living_history, city_name)
-
-    if city_name != "":
-        print("Here are top 5 county recommendations for you to relocate to along with their distance from your desired location!\n")
-    else:
-        print("Here are top 5 county recommendations for you to relocate to\n")
+    recommendations = cosine_distance_calculator(living_history, prefs)
     
-    for recommendation in recommendations:
-        if city_name != "":
-            print("County: " + str(recommendation[3]) + "\nState: " + str(recommendation[2]) + "\nDistance: " + str(recommendation[0]))
-        else:
-            print("County: " + str(recommendation[2]) + "\nState: " + str(recommendation[1]))
-        
-        print("\n")
-    
-    #to be added
-    recs = {}
-    return jsonify(recs)
+    return jsonify(recommendations)
 
 # Will use this to insert user and their prefs into Firebase
 @application.route("/insert_user", methods=["POST"]) 
@@ -151,13 +134,21 @@ def get_counties():
     counties = states_counties_dict[state]
     return jsonify(ast.literal_eval(counties))
 
-def cosine_distance_calculator(weights, history, city_name ='', max_distance = 50):
+def cosine_distance_calculator(history, prefs, max_distance = 50):
+
+    city_name = prefs["city"]
+
+    weights = [0, 0, prefs['educationImp']/10, prefs['educationImp']/10, prefs['povertyImp']/10, 0, prefs['populationImp'] / 10, 
+    prefs['costOfLivingImp'], 0, prefs['unemploymentImp'] / 10, prefs['precipitationImp'] / 10, prefs['temperatureImp'] / 10, prefs['costOfLivingImp'], prefs['costOfLivingImp']] 
 
     dataset = pd.read_csv("data.csv")
 
     avg = []
 
-    for state, county in history:
+    for item in history:
+        state = item['state']
+        county = item['county']
+        importance = item['locationImp']
         row = []
         row = dataset.loc[dataset['State'] == state]
         row = row.loc[row['Area_name'] == county]
@@ -180,6 +171,9 @@ def cosine_distance_calculator(weights, history, city_name ='', max_distance = 5
         else:
             avg = (avg + np.array(row)) / 2
 
+    avg[7] = (avg[7] + int(prefs["population"])) / 2
+    avg[11] = (avg[11] + int(prefs["temperature"])) / 2
+
     dist_list = {}
 
     for index, row in dataset.iterrows():
@@ -199,7 +193,7 @@ def cosine_distance_calculator(weights, history, city_name ='', max_distance = 5
 
         row = row[1:]
 
-        dist_list[distance.cosine(avg, row)] = [state, county]
+        dist_list[distance.cosine(avg, row, weights)] = [state, county]
 
 
     sorted_dictionary = OrderedDict(sorted(dist_list.items()))
@@ -250,10 +244,22 @@ def cosine_distance_calculator(weights, history, city_name ='', max_distance = 5
         final_output = sorted(final_output, key=itemgetter(0))
         final_output = sorted(final_output[:5], key=itemgetter(1))
 
+        temp_output = []
+
+        for item in final_output:
+            temp_output.append({"Distance": item[0], "Cos_Distance": item[1], "State": item[2], "County": item[3]})
+
+        final_output = temp_output
+
     else:
-        final_output = newList[0:5]
+        temp_output = newList[0:5]
+        final_output = []
+
+        for item in temp_output:
+            final_output.append({"Distance": 0, "Cos_Distance": item[0], "State": item[1], "County": item[2]})
 
     return final_output
+
 
 if __name__ == "__main__":
     application.run(host='127.0.0.1', port=5000, debug=False)
