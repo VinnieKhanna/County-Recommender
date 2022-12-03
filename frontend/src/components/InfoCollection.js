@@ -11,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
+import Snackbar from "@mui/material/Snackbar";
 
 // Data Imports
 import { cities } from "../data/cities";
@@ -28,6 +29,8 @@ function valuetext(value) {
 function InfoCollection(props) {
     const navigate = useNavigate();
 
+    const [open, setOpen] = React.useState(false);
+    const [msg, setMsg] = React.useState("");
 
     const [city, setCity] = React.useState('');
 
@@ -107,9 +110,22 @@ function InfoCollection(props) {
                 "Content-Type": "application/json"
             }
         }).then(res => {
-            console.log(res);
+            switch(res.status) {
+                case 200:
+                    setMsg("Successfully updated prefs")
+                    navigate("/past-counties");
+                    break
+                case 401:
+                    setMsg("Unauthorized. Try signing out and back in.")
+                    break
+                case 422:
+                    setMsg("Population and Temperature must be numbers.")
+                    break
+                default:
+                    setMsg(`${res.status}: Failed to update prefs - Unknown.`)
+            }
+            setOpen(true)
         })
-        navigate("/past-counties")
     }
 
     return (
@@ -316,6 +332,12 @@ function InfoCollection(props) {
                 <Button variant="contained" endIcon={<SendIcon />} sx={{ mt: 4 }} onClick={handleSubmit}>
                     Submit Preferences
                 </Button>
+                <Snackbar
+                open={open}
+                autoHideDuration={6000}
+                message={msg}
+                onClose={()=>setOpen(false)}
+                />
                 <br/>
                 <br/>
             </Box>
