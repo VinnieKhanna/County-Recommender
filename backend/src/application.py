@@ -55,7 +55,7 @@ def get_doc(collection, doc_name):
 
 # Will use this to compile recommendations per user
 # Receive user id, query firebase for preference/living history data, compile recommendation
-@application.route("/get_recommendations", methods=["POST"])
+@application.route("/get_recommendations", methods=["GET"])
 @jwt_required()
 def get_recommendations():
     # insecure to rely on body for user id (could get other users' recs): 
@@ -63,7 +63,13 @@ def get_recommendations():
     # instead use flask-jwt's current_identity:
     if current_identity is None:
         return Response("Could not identify user", status=401)
-    return
+    doc = db.collection('users').document(current_identity.id).get()
+    living_history = doc.get("history")
+    prefs = doc.get("prefs")
+
+    print(living_history, prefs) # here's your data srajan & vedic :)
+    recs = {}
+    return jsonify(recs)
 
 # Will use this to insert user and their prefs into Firebase
 @application.route("/insert_user", methods=["POST"]) 
@@ -97,7 +103,7 @@ def insert_user_prefs():
 
 
 # Attach living history to existing db user
-@application.route("/insert_living_history", methods=["POST"])
+@application.route("/add_living_history", methods=["POST"])
 @jwt_required()
 def insert_living_history():
     body = request.json
