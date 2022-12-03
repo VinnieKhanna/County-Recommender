@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import json
+from collections import defaultdict
 
 def clean_and_merge():
     education = pd.read_csv("Education.csv")
@@ -46,8 +47,29 @@ def get_states_and_counties():
         json.dump(states_counties_json, f, ensure_ascii=False, indent=4)
     return states_counties_df
 
+def get_county_wikipedias():
+    wiki_df = pd.read_html(
+        "https://en.wikipedia.org/wiki/List_of_United_States_counties_and_county_equivalents",
+        extract_links="all"
+        )
+    counties_df = wiki_df[0].iloc[:, [0, 1]]
+    counties_df["State"] = counties_df.iloc[:, 1].apply(lambda x: x[0])
+    counties_df["County"] = counties_df.iloc[:, 0].apply(lambda x: x[0])
+    counties_df["URL"] = counties_df.iloc[:, 0].apply(lambda x: f"https://en.wikipedia.org{x[1]}")
+    counties_df = counties_df[["State", "County", "URL"]]
+    counties_df.to_csv("CountyWikipedias.csv")
 
+    # Transforming into nice format to key into
+    counties_df = counties_df.groupby("State").agg(list)
+    counties_dict = defaultdict(dict)
+    def make_state_dict(x):
+        counties_dict[x.name] = {county: url for county, url in zip(x[0], x[1])}
+    counties_df.apply(lambda x: make_state_dict(x), axis=1)
+    with open('CountyWikipedias.json', 'w', encoding='utf-8') as f:
+        json.dump(counties_dict, f, ensure_ascii=False, indent=4)
+    return counties_dict
 # clean_and_merge()
-get_states_and_counties()
+# get_states_and_counties()
+get_county_wikipedias()
 
 
