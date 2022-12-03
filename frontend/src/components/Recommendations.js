@@ -4,7 +4,7 @@ export default function Recommendations(props) {
         // Can't use props.token here since it may not have loaded yet
         // Need synchronous check to local/session
         let local = localStorage.getItem("flask-jwt-token");
-        let session = localStorage.getItem("flask-jwt-token");
+        let session = sessionStorage.getItem("flask-jwt-token");
         let token = local ? local : session;
         fetch("/get_recommendations", {
             method: "GET",
