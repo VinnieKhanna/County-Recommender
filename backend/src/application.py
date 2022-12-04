@@ -72,10 +72,11 @@ def get_recommendations():
     living_history = doc.get("history")
     prefs = doc.get("prefs")
 
-    print(living_history, prefs) # here's your data srajan & vedic :)
+    try:
+        ratings = doc.get("ratings") # dict indexed by {county name}, {2 letter state}
+    except KeyError:
+        ratings = {}
 
-    ratings = doc.get("ratings") # dict indexed by {county name}, {2 letter state}
-    
     recommendations = cosine_distance_calculator(living_history, prefs, ratings)
     
     return jsonify(recommendations)

@@ -175,7 +175,9 @@ export default function Recommendations(props) {
                                             </Link>
                                         </StyledTableCell>
                                         <StyledTableCell>{row['Distance'] === 'N/A' ? 'N/A' : Math.round(row['Distance'] * 100)/100 }</StyledTableCell>
-                                        <StyledTableCell align="center"><Rating name="size-large" defaultValue={0} size="large" /></StyledTableCell>
+                                        <StyledTableCell align="center">
+                                            <Rating name="size-large" value={row['Rating']} onChange={(e, newVal) => handleRatingChange(e, newVal, idx)} size="large" />
+                                        </StyledTableCell>
                                     </StyledTableRow>
                                     ))}
                                 </TableBody>
@@ -199,7 +201,7 @@ export default function Recommendations(props) {
         <Button 
         variant="outlined"
         size = "large"
-        onClick={() => navigate("/recommendations")}>
+        onClick={submitRatings}>
         Submit Feedback
         </Button>
         </Stack>
@@ -210,6 +212,7 @@ export default function Recommendations(props) {
             message={msg}
             onClose={()=>setOpen(false)}
         />
+        </Box>
         </div>
       
     );

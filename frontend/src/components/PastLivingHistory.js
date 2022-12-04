@@ -149,14 +149,13 @@ export default function PastLivingHistory(props) {
       }
     }
 
-    const handleRemove = (county) => {
-      setLoading(true)
-      let index = countyList.indexOf(county)
-      countyList.splice(index,1)
-      stateList.splice(index,1)
-      rows.splice(index,1)
-      console.log(rows)
-      setLoading(false)
+    const handleRemove = (idx) => {
+      setMsg("Deleted " + countyList[idx])
+      countyList.splice(idx, 1)
+      countyList.splice(idx,1)
+      stateList.splice(idx,1)
+      rows.splice(idx,1)
+      setOpen(true)
     }
 
     const handleSubmit = () => {
@@ -223,8 +222,8 @@ export default function PastLivingHistory(props) {
                     </TableRow>
                     </TableHead>
                     <TableBody>
-                    {rows.map((row) => (
-                        <StyledTableRow key={row.state}>
+                    {rows.map((row, idx) => (
+                        <StyledTableRow key={idx}>
                             <StyledTableCell component="th" scope="row">
                                 {row.state}
                             </StyledTableCell>                          
@@ -235,7 +234,7 @@ export default function PastLivingHistory(props) {
                                    <Button 
             variant="contained"
             size = "large"
-            onClick={() => handleRemove(row.county)}>
+            onClick={() => handleRemove(idx)}>
             Delete
             </Button>
             </form>
