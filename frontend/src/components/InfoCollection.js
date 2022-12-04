@@ -44,7 +44,7 @@ function InfoCollection(props) {
       setPopulation(event.target.value);
     };
 
-    const [populationImp, setPopulationImp] = React.useState('');
+    const [populationImp, setPopulationImp] = React.useState(5);
 
     const handlePopulationImpChange = (event) => {
       setPopulationImp(event.target.value);
@@ -56,43 +56,43 @@ function InfoCollection(props) {
       setTemperature(event.target.value);
     };
 
-    const [temperatureImp, setTemperatureImp] = React.useState('');
+    const [temperatureImp, setTemperatureImp] = React.useState(5);
 
     const handleTemperatureImpChange = (event) => {
       setTemperatureImp(event.target.value);
     };
 
-    const [precipitationImp, setPrecipitationImp] = React.useState('');
+    const [precipitationImp, setPrecipitationImp] = React.useState(5);
 
     const handlePrecipitationImpChange = (event) => {
       setPrecipitationImp(event.target.value);
     };
 
-    const [unemploymentImp, setUnemploymentImp] = React.useState('');
+    const [unemploymentImp, setUnemploymentImp] = React.useState(5);
 
     const handleUnemploymentImpChange = (event) => {
       setUnemploymentImp(event.target.value);
     };
 
-    const [educationImp, setEducationImp] = React.useState('');
+    const [educationImp, setEducationImp] = React.useState(5);
 
     const handleEducationImpChange = (event) => {
       setEducationImp(event.target.value);
     };
 
-    const [povertyImp, setPovertyImp] = React.useState('');
+    const [povertyImp, setPovertyImp] = React.useState(5);
 
     const handlePovertyImpChange = (event) => {
       setPovertyImp(event.target.value);
     };
 
-    const [costOfLiving, setCostOfLiving] = React.useState('');
+    const [costOfLiving, setCostOfLiving] = React.useState(5);
 
     const handleCostOfLivingChange = (event) => {
       setCostOfLiving(event.target.value);
     };
 
-    const [costOfLivingImp, setCostOfLivingImp] = React.useState('');
+    const [costOfLivingImp, setCostOfLivingImp] = React.useState(5);
 
     const handleCostOfLivingImpChange = (event) => {
       setCostOfLivingImp(event.target.value);

@@ -68,8 +68,16 @@ def get_county_wikipedias():
     with open('CountyWikipedias.json', 'w', encoding='utf-8') as f:
         json.dump(counties_dict, f, ensure_ascii=False, indent=4)
     return counties_dict
+
+def get_abbrevs():
+    df = pd.read_csv("StateAbbreviations.csv")
+    df = df.set_index('code')
+    with open('abbreviations.json', 'w', encoding='utf-8') as f:
+        json.dump(json.loads(df.to_json())["state"], f, ensure_ascii=False, indent=4)
+
 # clean_and_merge()
 # get_states_and_counties()
-get_county_wikipedias()
+#get_county_wikipedias()
+get_abbrevs()
 
 

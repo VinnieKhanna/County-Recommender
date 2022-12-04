@@ -138,16 +138,22 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
 
     city_name = prefs["city"]
 
-    weights = [0, 0, prefs['educationImp']/10, prefs['educationImp']/10, prefs['povertyImp']/10, 0, prefs['populationImp'] / 10, 
-    prefs['costOfLivingImp'], 0, prefs['unemploymentImp'] / 10, prefs['precipitationImp'] / 10, prefs['temperatureImp'] / 10, prefs['costOfLivingImp'], prefs['costOfLivingImp']] 
+    baseline = np.array([11.5, 26.7, 28.9, 32.9, 11.9, 331449281, 331893745, 67340, 100, 8.1, 2.673786415, 55.67093097, 8929.995715, 10140.25742])
+    base_multiplier = np.array([1, 1, prefs['educationImp'] / 5, prefs['educationImp'] / 5, prefs['povertyImp'] / 5, 1, prefs['populationImp'] / 5, prefs['costOfLivingImp'] / 5, 1, prefs['unemploymentImp'] / 5, prefs['precipitationImp'] / 5, prefs['temperatureImp'] / 5, prefs['costOfLivingImp'] / 5, prefs['costOfLivingImp'] / 5])
+	
+
+    weights = [0, 0, prefs['educationImp']/10, prefs['educationImp']/10, prefs['povertyImp']/10, 0, prefs['populationImp'] / 10, prefs['costOfLivingImp'] / 10, 0, prefs['unemploymentImp'] / 10, prefs['precipitationImp'] / 10, prefs['temperatureImp'] / 10, prefs['costOfLivingImp'] / 10, prefs['costOfLivingImp'] / 10] 
 
     dataset = pd.read_csv("data.csv")
 
     avg = []
 
+    county_state = []
+
     for item in history:
         state = item['state']
         county = item['county']
+        county_state.append((county, state))
         importance = item['locationImp']
         row = []
         row = dataset.loc[dataset['State'] == state]
@@ -170,6 +176,9 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
             avg = row
         else:
             avg = (avg + np.array(row)) / 2
+    
+    if len(avg) == 0:
+        avg = np.multiply(baseline, base_multiplier).tolist()
 
     avg[7] = (avg[7] + int(prefs["population"])) / 2
     avg[11] = (avg[11] + int(prefs["temperature"])) / 2
@@ -237,6 +246,9 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
         new_coord = (float(city_location[0][0:-2]), float(city_location[1][0:-2]))
 
         for stuff in newList:
+            cs = (stuff[2], stuff[1])
+            if cs in county_state:
+                continue
             coords_1 = (stuff[3], stuff[4])
             dist = geopy.distance.geodesic(coords_1, new_coord).mi
             final_output.append([dist, stuff[0], stuff[1], stuff[2]])
@@ -256,7 +268,10 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
         final_output = []
 
         for item in temp_output:
-            final_output.append({"Distance": 0, "Cos_Distance": item[0], "State": item[1], "County": item[2]})
+            cs = (item[2], item[1])
+            if cs in county_state:
+                continue
+            final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2]})
 
     return final_output
 

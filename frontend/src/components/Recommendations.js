@@ -1,30 +1,23 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from "react-router";
-import { useState } from "react";
 
 // MUI Imports
-import { Typography, Button, Box } from "@mui/material";
+import { Button, Box, Link } from "@mui/material";
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
-import AppBar from '@mui/material/AppBar';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import MenuIcon from '@mui/icons-material/Menu';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import Container from '@mui/material/Container';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
 import Rating from '@mui/material/Rating';
+import Snackbar from "@mui/material/Snackbar";
 
-const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+// Data Imports
+import wikipedias from "../data/wikipedias.json"
+import abbrevs from "../data/abbreviations.json"
 
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -46,29 +39,14 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     border: 0,
   },
 }));
-const countyList = []
-const stateList = []
-const options = [
-  {label: 'React',      value: 'react'},
-  {label: 'JavaScript', value: 'js'   },
-  {label: 'TypeScript', value: 'ts'   }
-];
-function createData(
-    state,
-    county,
-  ) {
-    return { state, county };
-  }
 
-  const rows = [
-     createData("Georgia", "Fulton"),
-     createData("Georgia", "Dekalb"),
-     createData("Georgia", "Gwinnett"),
-     createData("Alabama", "Jefferson"),
-     createData("Alabama", "Montgomery"),
-  ];
   
 export default function Recommendations(props) {
+    const navigate = useNavigate();
+    const [recs, setRecs] = useState([]);
+    const [open, setOpen] = useState(false);
+    const [msg, setMsg] = useState("");
+
     useEffect(() => {
         // Can't use props.token here since it may not have loaded yet
         // Need synchronous check to local/session
@@ -80,38 +58,23 @@ export default function Recommendations(props) {
             headers: {
                 "Authorization" : `JWT ${token}`
             }
-        }).then(res => {
-            console.log(res)
+        }).then(async res => {
+            switch(res.status) {
+                case 200:
+                    let recObj = await res.json();
+                    setRecs(recObj);
+                    break
+                default:
+                    setMsg("Error getting recommendations");
+                    setOpen(true);
+                    break
+            }
         })
     }, [])
         return (
             <div>
-                  <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
-              <Toolbar>
-                <IconButton
-                  size="large"
-                  edge="start"
-                  color="inherit"
-                  aria-label="menu"
-                  sx={{ mr: 2 }}
-                >
-                  <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                  County Recommender
-                </Typography>
-              </Toolbar>
-            </AppBar>
-          </Box>
-                      <Box sx={{mt: "2em"}}>
-                  <Typography variant="h3" gutterBottom>
-                      Recommendations
-                  </Typography>
-                  <br/>
-              </Box>
       
-      <Box>
+      <Box sx={{pt:"5em"}}>
           <Stack><Stack 
       direction="row" 
       alignItems="center" 
@@ -123,19 +86,25 @@ export default function Recommendations(props) {
                 <TableRow>
                   <StyledTableCell>State</StyledTableCell>
                   <StyledTableCell>County</StyledTableCell>
+                  <StyledTableCell>Distance</StyledTableCell>
                   <StyledTableCell align="center">Suggestion Rating</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
-                  <StyledTableRow key={row.state}>
+                {recs.map((row, idx) => (
+                  <StyledTableRow key={idx}>
                     <StyledTableCell 
                     component="th" 
                     scope="row"
                     >
-                      {row.state}
+                      {row['State']}
                     </StyledTableCell>
-                    <StyledTableCell>{row.county}</StyledTableCell>
+                    <StyledTableCell>
+                        <Link href={wikipedias[abbrevs[row['State']]][row['County'].split(" ")[0]]}>
+                            {row['County']}
+                        </Link>
+                    </StyledTableCell>
+                    <StyledTableCell>{row['Distance'] === 'N/A' ? 'N/A' : Math.round(row['Distance'] * 100)/100 }</StyledTableCell>
                     <StyledTableCell align="center"><Rating name="size-large" defaultValue={0} size="large" /></StyledTableCell>
                   </StyledTableRow>
                 ))}
@@ -166,6 +135,12 @@ export default function Recommendations(props) {
         </Button>
         </Stack>
         </Box>
+        <Snackbar
+            open={open}
+            autoHideDuration={6000}
+            message={msg}
+            onClose={()=>setOpen(false)}
+        />
         </div>
       
     );
