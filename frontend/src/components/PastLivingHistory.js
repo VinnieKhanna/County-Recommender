@@ -1,4 +1,5 @@
 // React, Router Imports
+import * as React from 'react';
 import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 
@@ -148,6 +149,16 @@ export default function PastLivingHistory(props) {
       }
     }
 
+    const handleRemove = (county) => {
+      setLoading(true)
+      let index = countyList.indexOf(county)
+      countyList.splice(index,1)
+      stateList.splice(index,1)
+      rows.splice(index,1)
+      console.log(rows)
+      setLoading(false)
+    }
+
     const handleSubmit = () => {
       fetch("/add_living_history", {
         method: "POST",
@@ -205,19 +216,30 @@ export default function PastLivingHistory(props) {
                 </colgroup>
                     <TableHead>
                     <TableRow sx={{ flexGrow: 1, mx:'auto', backgroundColor:'#1876d1' }}>
-                        <StyledTableCell>County</StyledTableCell>
                         <StyledTableCell>State</StyledTableCell>
+                        <StyledTableCell>County</StyledTableCell>
                         <StyledTableCell align="center">Location Importance</StyledTableCell>
+                        <StyledTableCell align='center'>Delete Entry</StyledTableCell>
                     </TableRow>
                     </TableHead>
                     <TableBody>
                     {rows.map((row) => (
                         <StyledTableRow key={row.state}>
-                            <StyledTableCell>{row.county}</StyledTableCell>
                             <StyledTableCell component="th" scope="row">
                                 {row.state}
-                            </StyledTableCell>
+                            </StyledTableCell>                          
+                            <StyledTableCell>{row.county}</StyledTableCell>
                             <StyledTableCell align="center">{row.locationImp}</StyledTableCell>
+                            <StyledTableCell align="center">     
+                            <form noValidate autoComplete="off" onSubmit={handleRemove}>
+                                   <Button 
+            variant="contained"
+            size = "large"
+            onClick={() => handleRemove(row.county)}>
+            Delete
+            </Button>
+            </form>
+                            </StyledTableCell>
                         </StyledTableRow>
                     ))}
                     </TableBody>
@@ -232,6 +254,20 @@ export default function PastLivingHistory(props) {
                 alignItems="center" 
                 justifyContent="center">
                     <Grid container spacing={5}>
+                    <Grid item xs={3} md={3}>
+                            <FormControl style={{minWidth: 150}}>
+                                <InputLabel id="demo-simple-select-label">State</InputLabel>
+                                <Select
+                                onChange={(e) => setState(e.target.value)}
+                                label="State"
+                                value={state} 
+                                variant="outlined"
+                                required
+                                error = {stateError} >
+                                    {states.map((state, idx) => <MenuItem key={idx} value={state}>{state}</MenuItem>)}
+                                </Select>
+                            </FormControl>  
+                        </Grid>                      
                         <Grid item xs={3} md={3}>
                             <FormControl style={{minWidth: 150}}>
                                 <InputLabel id="demo-simple-select-label">County</InputLabel>
@@ -245,21 +281,7 @@ export default function PastLivingHistory(props) {
                                     {countySelectList.map((county, idx) => <MenuItem key={idx} value={county}>{county}</MenuItem>)}
                                 </Select>
                             </FormControl>  
-                        </Grid>
-                        <Grid item xs={3} md={3}>
-                            <FormControl style={{minWidth: 150}}>
-                                <InputLabel id="demo-simple-select-label">State</InputLabel>
-                                <Select
-                                onChange={(e) => setState(e.target.value)}
-                                label="State"
-                                value={state} 
-                                variant="outlined"
-                                required
-                                error = {stateError} >
-                                    {states.map((state, idx) => <MenuItem key={idx} value={state}>{state}</MenuItem>)}
-                                </Select>
-                            </FormControl>  
-                        </Grid>                  
+                        </Grid>         
                         
                         <Grid item xs={4} md={4}>
                             <FormControl style={{minWidth: 200}}>
