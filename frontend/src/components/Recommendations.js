@@ -123,7 +123,7 @@ export default function Recommendations(props) {
                                     <TableRow>
                                     <StyledTableCell>State</StyledTableCell>
                                     <StyledTableCell>County</StyledTableCell>
-                                    <StyledTableCell>Distance</StyledTableCell>
+                                    <StyledTableCell>Distance (mi)</StyledTableCell>
                                     <StyledTableCell align="center">Suggestion Rating</StyledTableCell>
                                     </TableRow>
                                 </TableHead>
