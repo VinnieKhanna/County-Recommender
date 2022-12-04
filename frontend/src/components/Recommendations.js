@@ -50,7 +50,8 @@ export default function Recommendations(props) {
     const [msg, setMsg] = useState("");
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchRecommendations = () => {
+        setLoading(true);
         // Can't use props.token here since it may not have loaded yet
         // Need synchronous check to local/session
         let local = localStorage.getItem("flask-jwt-token");
@@ -64,17 +65,49 @@ export default function Recommendations(props) {
         }).then(async res => {
             switch(res.status) {
                 case 200:
-                    let recObj = await res.json();
-                    setRecs(recObj);
+                    res.json().then((recObj) => {
+                        setRecs(recObj);
+                        setLoading(false);
+                    })
                     break
                 default:
                     setMsg("Error getting recommendations");
                     setOpen(true);
+                    setLoading(false);
                     break
             }
-            setLoading(false);
         })
-    }, [])
+    }
+
+    useEffect(fetchRecommendations, [])
+
+    const submitRatings = () => {
+        setLoading(true)
+        fetch("/add_ratings", {
+            method: "POST",
+            body: JSON.stringify(recs),
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `JWT ${props.token}`
+            }
+        }).then(async res => {
+            switch(res.status) {
+                case 200:
+                    setMsg("Submitted feedback, re-compiling recs")
+                    fetchRecommendations()
+                    break
+                default:
+                    setMsg("Error submitting ratings")
+            }
+            setOpen(true);
+        })
+    }
+
+    const handleRatingChange = (event, newvalue, idx) => {
+        let newRecs = recs.slice()
+        newRecs[idx]["Rating"] = newvalue == null ? 0 : newvalue
+        setRecs(newRecs)
+    }
 
     
     return (
@@ -114,7 +147,9 @@ export default function Recommendations(props) {
                         </Link>
                     </StyledTableCell>
                     <StyledTableCell>{row['Distance'] === 'N/A' ? 'N/A' : Math.round(row['Distance'] * 100)/100 }</StyledTableCell>
-                    <StyledTableCell align="center"><Rating name="size-large" defaultValue={0} size="large" /></StyledTableCell>
+                    <StyledTableCell align="center">
+                        <Rating name="size-large" value={row['Rating']} onChange={(e, newVal) => handleRatingChange(e, newVal, idx)} size="large" />
+                    </StyledTableCell>
                   </StyledTableRow>
                 ))}
               </TableBody>
@@ -139,7 +174,7 @@ export default function Recommendations(props) {
         <Button 
         variant="outlined"
         size = "large"
-        onClick={() => navigate("/recommendations")}>
+        onClick={submitRatings}>
         Submit Feedback
         </Button>
         </Stack>

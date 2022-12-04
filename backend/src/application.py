@@ -187,15 +187,12 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
     good_ratings = []
 
     for county_rating in ratings.keys():
-
-        rating = ratings[]
-
-        if rating["rating"] <= 2:
-            ignore.append((rating['county'], rating['state']))
-        elif rating['rating'] >= 4:
-            good_ratings.append((rating['county'], rating['state']))
-            rating['locationImp'] = 5
-            history.append(rating)
+        rating = ratings[county_rating]
+        if rating["Rating"] == 2 or rating["Rating"] == 1:
+            ignore.append((rating['County'], rating['State']))
+        elif rating['Rating'] >= 4:
+            good_ratings.append((rating['County'], rating['State']))
+            history.append({"county": rating["County"], "state": rating["State"], "locationImp": 5})
 
     city_name = prefs["city"]
 
@@ -320,7 +317,12 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
         temp_output = []
 
         for item in final_output:
-            temp_output.append({"Distance": item[0], "Cos_Distance": item[1], "State": item[2], "County": item[3]})
+            check_rating = str(item[3]) + ", " +  str(item[2])
+            if check_rating in ratings.keys():
+                temp_output.append({"Distance": item[0], "Cos_Distance": item[1], "State": item[2], "County": item[3], "Rating": ratings[check_rating]["Rating"]})
+            else:
+                temp_output.append({"Distance": item[0], "Cos_Distance": item[1], "State": item[2], "County": item[3], "Rating": 0})
+
 
         final_output = temp_output
 
@@ -332,7 +334,11 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
             cs = (item[2], item[1])
             if (cs in county_state or cs in ignore) and cs not in good_ratings:
                 continue
-            final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2]})
+            check_rating = str(item[3]) + ", " +  str(item[2])
+            if check_rating in ratings.keys():
+                final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2], "Rating": ratings[check_rating]["Rating"]})
+            else:
+                final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2], "Rating": 0})
 
     return final_output
 
