@@ -59,8 +59,7 @@ def get_doc(collection, doc_name):
 
 ######### HTTP Routes ############
 
-# Will use this to compile recommendations per user
-# Receive user id, query firebase for preference/living history data, compile recommendation
+# Compile recommendations per user
 @application.route("/get_recommendations", methods=["GET"])
 @jwt_required()
 def get_recommendations():
@@ -81,7 +80,8 @@ def get_recommendations():
     
     return jsonify(recommendations)
 
-# Will use this to insert user and their prefs into Firebase
+
+# Insert user and their prefs into Firebase
 @application.route("/insert_user", methods=["POST"]) 
 def insert_user():
     args = request.form.to_dict()
@@ -99,6 +99,7 @@ def insert_user():
         db.collection('users').document(username).set({"password" : password})
         return Response("Insert success", status=200)
 
+
 # Attach user prefs to existing db user
 @application.route("/insert_user_prefs", methods=["POST"])
 @jwt_required()
@@ -111,6 +112,16 @@ def insert_user_prefs():
     db.collection('users').document(current_identity.id).update({ "prefs" : body })
     return Response(status=200)
 
+# Get user prefs for existing db user (to populate page for returning users)
+@application.route("/get_user_prefs", methods=["GET"])
+@jwt_required()
+def get_user_prefs():
+    try:
+        prefs = get_doc('users', current_identity.id).get("prefs")
+        return jsonify(prefs)
+    except KeyError:
+        return Response(status=204) # no content to return
+
 
 # Attach living history to existing db user
 @application.route("/add_living_history", methods=["POST"])
@@ -120,11 +131,32 @@ def insert_living_history():
     db.collection('users').document(current_identity.id).update({ "history" : body })
     return Response(status=200)
 
+# Get living history for existing db user (to populate page for returning users)
+@application.route("/get_living_history", methods=["GET"])
+@jwt_required()
+def get_living_history():
+    try:
+        history = get_doc('users', current_identity.id).get("history")
+        return jsonify(history)
+    except KeyError:
+        return Response(status=204) # no content to return
+
 
 # Will use this to insert user rating for their recommendations
 @application.route("/add_user_rating", methods=["POST"])
+@jwt_required()
 def add_rating():
     return
+
+@application.route("/get_user_ratings", methods=["GET"])
+@jwt_required()
+def get_ratings():
+    try:
+        ratings = get_doc('users', current_identity.id).get("ratings")
+        return jsonify(ratings)
+    except KeyError:
+        return Response(status=204) # no content to return
+
 
 # Helper route to get the counties associated with a state abbreviation
 # Helpful for populating Select/Dropdowns on frontend
@@ -135,6 +167,7 @@ def get_counties():
         return Response("Missing required query param 'state'", status=422)
     counties = states_counties_dict[state]
     return jsonify(ast.literal_eval(counties))
+
 
 def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 

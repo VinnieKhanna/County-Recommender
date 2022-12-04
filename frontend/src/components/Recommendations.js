@@ -137,7 +137,7 @@ export default function Recommendations(props) {
         </Button>
       
         <Button 
-        variant="contained"
+        variant="outlined"
         size = "large"
         onClick={() => navigate("/recommendations")}>
         Submit Feedback

@@ -98,6 +98,41 @@ function InfoCollection(props) {
       setCostOfLivingImp(event.target.value);
     };
 
+    // Populate all fields if user has already filled this page out
+    React.useEffect(() => {
+        // Need synchronous check to local/session
+        let local = localStorage.getItem("flask-jwt-token");
+        let session = sessionStorage.getItem("flask-jwt-token");
+        let token = local ? local : session;
+        fetch("/get_user_prefs", {
+            method: "GET",
+            headers: {
+                "Authorization": `JWT ${token}`
+            }
+        }).then(async res => {
+            switch (res.status) {
+                case 200:
+                    let prefs = await res.json()
+                    setCity(prefs["city"])
+                    setCostOfLiving(prefs["costOfLiving"])
+                    setCostOfLivingImp(prefs["costOfLivingImp"])
+                    setPopulation(prefs["population"])
+                    setPopulationImp(prefs["populationImp"])
+                    setPrecipitationImp(prefs["precipitationImp"])
+                    setTemperature(prefs["temperature"])
+                    setTemperatureImp(prefs["temperatureImp"])
+                    setEducationImp(prefs["educationImp"])
+                    setUnemploymentImp(prefs["unemploymentImp"])
+                    setPovertyImp(prefs["povertyImp"])
+                    break
+                case 204:
+                    break
+                default:
+                    console.log('error checking user prefs')
+            }
+        })
+    }, [])
+
     const handleSubmit = (event) => {
         let preferences = [city, population, populationImp, temperature, temperatureImp, precipitationImp, unemploymentImp, educationImp, povertyImp, costOfLiving, costOfLivingImp]
         let preferenceNames = "city, population, populationImp, temperature, temperatureImp, precipitationImp, unemploymentImp, educationImp, povertyImp, costOfLiving, costOfLivingImp".split(", ");

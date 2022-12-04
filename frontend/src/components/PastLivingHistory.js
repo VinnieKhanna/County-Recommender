@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 
 // MUI Imports
-import React from 'react'
 import { Typography, Button, Box, Grid, FormControl } from "@mui/material";
 import { styled } from '@mui/material/styles'
 import Table from '@mui/material/Table';
@@ -61,6 +60,8 @@ function createData(
 export default function PastLivingHistory(props) {
     const navigate = useNavigate();
 
+    const [loading, setLoading] = useState(true)
+
     const [countySelectList, setCountySelectList] = useState([])
  
     const [state, setState] = useState('')
@@ -71,10 +72,40 @@ export default function PastLivingHistory(props) {
     const [countyError, setCountyError] = useState(false)
     const [locationImpError, setLocationImpError] = useState(false)
 
-    const [open, setOpen] = React.useState(false);
-    const [msg, setMsg] = React.useState("");
+    const [open, setOpen] = useState(false);
+    const [msg, setMsg] = useState("");
 
-  
+    // Populate table if user has filled it out before
+    useEffect(() => {
+      // Need synchronous check to local/session
+      let local = localStorage.getItem("flask-jwt-token");
+      let session = sessionStorage.getItem("flask-jwt-token");
+      let token = local ? local : session;
+      fetch("/get_living_history", {
+          method: "GET",
+          headers: {
+              "Authorization": `JWT ${token}`
+          }
+      }).then(async res => {
+        switch (res.status) {
+          case 200:
+              let history = await res.json()
+              for (let row of history) {
+                countyList.push(row.county)
+                stateList.push(row.state)
+                locationImpList.push(row.locationImp)
+                rows.push(row)
+              }
+              break
+          case 204:
+              break
+          default:
+              console.log('error checking user history')
+        }
+        setLoading(false);
+      })
+    }, [])
+
     // On selected state changing, change counties on dropdown
     useEffect(() => {
       if (state !== undefined && state != null && state !== '') {
