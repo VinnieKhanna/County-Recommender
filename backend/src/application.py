@@ -74,7 +74,7 @@ def get_recommendations():
 
     print(living_history, prefs) # here's your data srajan & vedic :)
 
-    ratings = []
+    ratings = doc.get("ratings") # dict indexed by {county name}, {2 letter state}
     
     recommendations = cosine_distance_calculator(living_history, prefs, ratings)
     
@@ -142,13 +142,25 @@ def get_living_history():
         return Response(status=204) # no content to return
 
 
-# Will use this to insert user rating for their recommendations
-@application.route("/add_user_rating", methods=["POST"])
+# Will use this to insert user ratings for their recommendations
+@application.route("/add_ratings", methods=["POST"])
 @jwt_required()
 def add_rating():
-    return
+    body = request.json
+    print(body)
+    new_ratings = {f"{row['County']}, {row['State']}": {k: row[k] for k in ['State', 'County', 'Rating']} for row in body}
+    try:
+        # merge existing and new ratings, preferring new ratings
+        existing_ratings = get_doc('users', current_identity.id).get("ratings")
+        ratings = {**existing_ratings, **new_ratings}
+        db.collection('users').document(current_identity.id).update({ "ratings" : ratings })
+    except KeyError:
+        # No existing ratings, initialize object in firebase
+        db.collection('users').document(current_identity.id).update({ "ratings" : new_ratings })
+    
+    return Response(status=200)
 
-@application.route("/get_user_ratings", methods=["GET"])
+@application.route("/get_ratings", methods=["GET"])
 @jwt_required()
 def get_ratings():
     try:
@@ -174,7 +186,10 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
     ignore = []
     good_ratings = []
 
-    for rating in ratings:
+    for county_rating in ratings.keys():
+
+        rating = ratings[]
+
         if rating["rating"] <= 2:
             ignore.append((rating['county'], rating['state']))
         elif rating['rating'] >= 4:
