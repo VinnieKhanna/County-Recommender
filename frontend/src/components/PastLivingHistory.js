@@ -148,6 +148,16 @@ export default function PastLivingHistory(props) {
       }
     }
 
+    const handleRemove = (county) => {
+      setLoading(true)
+      let index = countyList.indexOf(county)
+      countyList.splice(index,1)
+      stateList.splice(index,1)
+      rows.splice(index,1)
+      console.log(rows)
+      setLoading(false)
+    }
+
     const handleSubmit = () => {
       fetch("/add_living_history", {
         method: "POST",
@@ -208,6 +218,7 @@ export default function PastLivingHistory(props) {
                         <StyledTableCell>County</StyledTableCell>
                         <StyledTableCell>State</StyledTableCell>
                         <StyledTableCell align="center">Location Importance</StyledTableCell>
+                        <StyledTableCell align='center'>Delete Entry</StyledTableCell>
                     </TableRow>
                     </TableHead>
                     <TableBody>
@@ -218,6 +229,16 @@ export default function PastLivingHistory(props) {
                                 {row.state}
                             </StyledTableCell>
                             <StyledTableCell align="center">{row.locationImp}</StyledTableCell>
+                            <StyledTableCell align="center">     
+                            <form noValidate autoComplete="off" onSubmit={handleRemove}>
+                                   <Button 
+            variant="contained"
+            size = "large"
+            onClick={() => handleRemove(row.county)}>
+            Delete
+            </Button>
+            </form>
+                            </StyledTableCell>
                         </StyledTableRow>
                     ))}
                     </TableBody>
