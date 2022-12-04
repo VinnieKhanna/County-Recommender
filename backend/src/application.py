@@ -74,8 +74,10 @@ def get_recommendations():
     prefs = doc.get("prefs")
 
     print(living_history, prefs) # here's your data srajan & vedic :)
+
+    ratings = []
     
-    recommendations = cosine_distance_calculator(living_history, prefs)
+    recommendations = cosine_distance_calculator(living_history, prefs, ratings)
     
     return jsonify(recommendations)
 
@@ -134,7 +136,18 @@ def get_counties():
     counties = states_counties_dict[state]
     return jsonify(ast.literal_eval(counties))
 
-def cosine_distance_calculator(history, prefs, max_distance = 50):
+def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
+
+    ignore = []
+    good_ratings = []
+
+    for rating in ratings:
+        if rating["rating"] <= 2:
+            ignore.append((rating['county'], rating['state']))
+        elif rating['rating'] >= 4:
+            good_ratings.append((rating['county'], rating['state']))
+            rating['locationImp'] = 5
+            history.append(rating)
 
     city_name = prefs["city"]
 
@@ -247,7 +260,7 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
 
         for stuff in newList:
             cs = (stuff[2], stuff[1])
-            if cs in county_state:
+            if (cs in county_state or cs in ignore) and cs not in good_ratings:
                 continue
             coords_1 = (stuff[3], stuff[4])
             dist = geopy.distance.geodesic(coords_1, new_coord).mi
@@ -269,7 +282,7 @@ def cosine_distance_calculator(history, prefs, max_distance = 50):
 
         for item in temp_output:
             cs = (item[2], item[1])
-            if cs in county_state:
+            if (cs in county_state or cs in ignore) and cs not in good_ratings:
                 continue
             final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2]})
 

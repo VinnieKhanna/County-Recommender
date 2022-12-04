@@ -157,7 +157,9 @@ function InfoCollection(props) {
                             label="Preferred City"
                             onChange={handleCityChange}
                             >
-                                {cities.map((city) => <MenuItem value={city.value}>{city.label}</MenuItem>)}
+                                {cities.map((city, idx) => 
+                                    <MenuItem key={idx} value={city.value}>{city.label}</MenuItem>
+                                )}
                             </Select>
                         </FormControl>                            
                     </Grid>

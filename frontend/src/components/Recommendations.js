@@ -14,6 +14,8 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Rating from '@mui/material/Rating';
 import Snackbar from "@mui/material/Snackbar";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Data Imports
 import wikipedias from "../data/wikipedias.json"
@@ -46,6 +48,7 @@ export default function Recommendations(props) {
     const [recs, setRecs] = useState([]);
     const [open, setOpen] = useState(false);
     const [msg, setMsg] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Can't use props.token here since it may not have loaded yet
@@ -69,17 +72,23 @@ export default function Recommendations(props) {
                     setOpen(true);
                     break
             }
+            setLoading(false);
         })
     }, [])
-        return (
-            <div>
-      
+
+    
+    return (
+        <div>
+      <Backdrop open={loading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <CircularProgress color="primary" />
+      </Backdrop>
       <Box sx={{pt:"5em"}}>
           <Stack><Stack 
       direction="row" 
       alignItems="center" 
       justifyContent="center"
       spacing={2}>
+        
       <TableContainer component={Paper}>
             <Table sx={{ minWidth: 500 }} aria-label="customized table">
               <TableHead>
