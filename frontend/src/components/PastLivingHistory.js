@@ -45,9 +45,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     border: 0,
   },
 }));
-const countyList = []
-const stateList = []
-const locationImpList = []
+let countyList = []
+let stateList = []
+let locationImpList = []
 function createData(
     county,
     state,
@@ -56,7 +56,7 @@ function createData(
     return { county, state, locationImp };
   }
 
-  const rows = []; 
+  let rows = []; 
   
 export default function PastLivingHistory(props) {
     const navigate = useNavigate();
@@ -91,6 +91,10 @@ export default function PastLivingHistory(props) {
         switch (res.status) {
           case 200:
               let history = await res.json()
+              countyList = []
+              stateList = []
+              locationImpList = []
+              rows = []
               for (let row of history) {
                 countyList.push(row.county)
                 stateList.push(row.state)
