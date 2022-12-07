@@ -276,7 +276,7 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
             print(avg)
             print("-------------------------------------------------------------------")
 
-        dist_list[distance.cosine(avg, row, weights)] = [state, county]
+        dist_list[distance.cosine(avg, row, weights)] = [state, county, abs(euclidean_distance(avg, row)), abs(manhattan_distance(row, avg))]
         euclidean_dists[abs(euclidean_distance(avg, row))] = [state, county]
         manhattan_dists[abs(manhattan_distance(row, avg))] = [state, county]
 
