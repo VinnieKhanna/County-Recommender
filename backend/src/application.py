@@ -182,6 +182,13 @@ def get_counties():
     return jsonify(ast.literal_eval(counties))
 
 
+def euclidean_distance(vector1,vector2):
+  return math.sqrt(sum(pow(i-j,2) for i, j in zip(vector1, vector2)))
+
+def manhattan_distance(vector1,vector2):
+  return sum(abs(a-b) for a,b in zip(vector1,vector2))
+
+
 def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
     ignore = []
@@ -243,6 +250,8 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
     avg[11] = (avg[11] + int(prefs["temperature"])) / 2
 
     dist_list = {}
+    euclidean_dists = {}
+    manhattan_dists = {}
 
     for index, row in dataset.iterrows():
         state = row['State']
@@ -261,12 +270,30 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
         row = row[1:]
 
-        dist_list[distance.cosine(avg, row, weights)] = [state, county]
+        if index < 1:
+            print("-------------------------------------------------------------------")
+            print(row.tolist())
+            print(avg)
+            print("-------------------------------------------------------------------")
 
+        dist_list[distance.cosine(avg, row, weights)] = [state, county]
+        euclidean_dists[abs(euclidean_distance(avg, row))] = [state, county]
+        manhattan_dists[abs(manhattan_distance(row, avg))] = [state, county]
+
+    
 
     sorted_dictionary = OrderedDict(sorted(dist_list.items()))
+    sorted_euclidean = OrderedDict(sorted(euclidean_dists.items()))
+    sorted_manhattan = OrderedDict(sorted(manhattan_dists.items()))
+
 
     result = np.array(list(sorted_dictionary.items()), dtype = object)
+
+    print(result[0:10])
+    print("---------------------------------------------------------------------------------------------------")
+    print(np.array(list(sorted_euclidean.items()), dtype = object)[0:10])
+    print("---------------------------------------------------------------------------------------------------")
+    print(np.array(list(sorted_manhattan.items()), dtype = object)[0:10])
 
     indices = np.where(result[:, 0] < 0.01)
 
