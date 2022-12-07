@@ -265,6 +265,10 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
     euclidean_dists = {}
     manhattan_dists = {}
 
+    print(f"\nDataset Head: \n{dataset.head()}\n")
+
+    print(f"\nSearch Vector (created from preferences + living history + rating feedback): \n{avg.tolist()}\n")
+    print("\nComparison Matrix: (all counties):\n")
     for index, row in dataset.iterrows():
         state = row['State']
         county = row['Area_name']
@@ -282,16 +286,14 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
         row = row[1:]
 
-        if index < 1:
-            print("-------------------------------------------------------------------")
+        if index < 10:
             print(row.tolist())
-            print(avg)
-            print("-------------------------------------------------------------------")
 
         dist_list[distance.cosine(avg, row, weights)] = [state, county, abs(euclidean_distance(avg, row)), abs(manhattan_distance(row, avg))]
         euclidean_dists[abs(euclidean_distance(avg, row))] = [state, county]
         manhattan_dists[abs(manhattan_distance(row, avg))] = [state, county]
 
+    print("...")
     
 
     sorted_dictionary = OrderedDict(sorted(dist_list.items()))
