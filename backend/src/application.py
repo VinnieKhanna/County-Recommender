@@ -267,7 +267,7 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
     print(f"\nDataset Head: \n{dataset.head()}\n")
 
-    print(f"\nSearch Vector (created from preferences + living history + rating feedback): \n{avg.tolist()}\n")
+    print(f"\nSearch Vector (created from preferences + living history + rating feedback): \n{avg if type(avg) == type(list()) else avg.tolist()}\n")
     print("\nComparison Matrix: (all counties):\n")
     for index, row in dataset.iterrows():
         state = row['State']
