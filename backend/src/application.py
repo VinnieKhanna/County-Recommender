@@ -10,6 +10,7 @@ from flask_jwt import JWT, jwt_required, current_identity
 import ast
 import firebase_admin
 from firebase_admin import credentials, firestore
+import time
 
 from scipy.spatial import distance
 from collections import OrderedDict
@@ -63,6 +64,7 @@ def get_doc(collection, doc_name):
 @application.route("/get_recommendations", methods=["GET"])
 @jwt_required()
 def get_recommendations():
+    start = time.time() # for latency measurement
     # insecure to rely on body for user id (could get other users' recs): 
     # user_id = request.args.get("user_id")
     # instead use flask-jwt's current_identity:
@@ -72,13 +74,21 @@ def get_recommendations():
     living_history = doc.get("history")
     prefs = doc.get("prefs")
 
+    print(f"\nLiving History:\n{json.dumps(living_history, indent=4)}\n")
+    print(f"\nUser Preferences:\n{json.dumps(prefs, indent=4)}\n")
+
     try:
         ratings = doc.get("ratings") # dict indexed by {county name}, {2 letter state}
     except KeyError:
         ratings = {}
 
     recommendations = cosine_distance_calculator(living_history, prefs, ratings)
-    
+    print(f"\nFinal Recommendations:\n{json.dumps(recommendations, indent=4)}\n")
+
+    end = time.time()
+
+    print(f"Time elapsed to compile recommendations: {end - start}\n")
+
     return jsonify(recommendations)
 
 
@@ -203,6 +213,8 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
     weights = [0, 0, prefs['educationImp']/10, prefs['educationImp']/10, prefs['povertyImp']/10, 0, prefs['populationImp'] / 10, prefs['costOfLivingImp'] / 10, 0, prefs['unemploymentImp'] / 10, prefs['precipitationImp'] / 10, prefs['temperatureImp'] / 10, prefs['costOfLivingImp'] / 10, prefs['costOfLivingImp'] / 10] 
 
+    print(f"\nRecommendation weights: {weights}\n")
+
     dataset = pd.read_csv("data.csv")
 
     avg = []
@@ -268,9 +280,13 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
 
     result = np.array(list(sorted_dictionary.items()), dtype = object)
 
+    print(f"\nFull Results: \nCosine Distance \t County \n{pd.DataFrame(result[:10]).to_string(index=False, header=False)}\n...\n")
+
     indices = np.where(result[:, 0] < 0.01)
 
     good_matches = result[indices[0]]
+
+    print(f"\nFiltered Results: \nCosine Distance \t County \n{pd.DataFrame(good_matches).to_string(index=False, header=False)}\n")
     
     latlong = pd.read_csv("CountyAndLocation.csv")
 
