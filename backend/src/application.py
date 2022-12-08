@@ -17,6 +17,7 @@ from collections import OrderedDict
 import geopy.distance
 import math
 from operator import itemgetter
+from sklearn.metrics import  pairwise 
 
 # Initialize Flask App
 application = Flask(__name__, template_folder='html')
@@ -85,6 +86,7 @@ def get_recommendations():
     recommendations = cosine_distance_calculator(living_history, prefs, ratings)
     print(f"\nFinal Recommendations:\n{json.dumps(recommendations, indent=4)}\n")
 
+    print(recommendations)
     end = time.time()
 
     print(f"Time elapsed to compile recommendations: {end - start}\n")
@@ -289,7 +291,7 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
         if index < 10:
             print(row.tolist())
 
-        dist_list[distance.cosine(avg, row, weights)] = [state, county, abs(euclidean_distance(avg, row)), abs(manhattan_distance(row, avg))]
+        dist_list[distance.cosine(avg, row, weights)] = [state, county]
         euclidean_dists[abs(euclidean_distance(avg, row))] = [state, county]
         manhattan_dists[abs(manhattan_distance(row, avg))] = [state, county]
 
@@ -380,10 +382,53 @@ def cosine_distance_calculator(history, prefs, ratings, max_distance = 50):
                 final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2], "Rating": ratings[check_rating]["Rating"]})
             else:
                 final_output.append({"Distance": "N/A", "Cos_Distance": item[0], "State": item[1], "County": item[2], "Rating": 0})
+    
+        # Compute & print intralist similarity
+        output_pairs = [(output["State"], output["County"]) for output in final_output]
+        get_intralist_similarities(output_pairs)
 
     return final_output
 
+def get_intralist_similarities(in_list):
+    dataset = pd.read_csv("data.csv")
+     # Computing intralist similarity
+    output_list = [] 
+    for pair in in_list:
+        row = np.array(dataset[(dataset["State"] == pair[0]) & (dataset["Area_name"] == pair[1])])[0]
+        row = row[3:]
+
+        for i in range(len(row)):
+            if type(row[i]) == str:
+                if "," in row[i]:
+                    row[i] = int(row[i].replace(",", ""))
+                else:
+                    row[i] = int(row[i])
+            else:
+                row[i] = round(row[i])
+
+        output_list.append(row)
+    output_list = np.array(output_list)
+    
+    print("Intralist Distances:")
+    print("--------------------------------")
+    # Create pairwise cosine distance matrix
+    for metric in ['cosine', 'euclidean', 'manhattan']:
+        dists = pairwise.pairwise_distances(output_list, metric=metric)
+        print(f"{dists.sum()/(5*5 - 5)}") # sum distance over all - diagonal
+    print("--------------------------------")
 
 if __name__ == "__main__":
+    # Compute output similarities
+    # scenario1 = [('GA', 'Fulton County'), ('GA', 'Gwinnett County'), ('GA', 'DeKalb County'), ('GA', 'Cobb County'), ('SC', 'Greenville County')]
+    # scenario2 = [('GA', 'Paulding County'), ('GA', 'Douglas County'), ('GA', 'Coweta County'), ('GA', 'Henry County'), ('GA', 'Newton County')]
+    # scenario3 = [('AK', 'Sitka City and Borough'), ('AK', 'Haines Borough'), ('AK', 'Denali Borough'), ('AK', 'Skagway Municipality'), ('AK', 'Yakutat City and Borough')]
+    # scenario4 = [('TX', 'Loving County'), ('AK', 'Haines Borough')]
+    # scenario5 = [('OH', 'Geauga County'), ('VA', 'Hanover County'), ('VA', 'Frederick County'), ('OH', 'Knox County'), ('VA', 'Bedford County')]
+    # get_intralist_similarities(scenario1)
+    # get_intralist_similarities(scenario2)
+    # get_intralist_similarities(scenario3)
+    # get_intralist_similarities(scenario4)
+    # get_intralist_similarities(scenario5)
+    
     application.run(host='127.0.0.1', port=5000, debug=False)
 
