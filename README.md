@@ -2,7 +2,7 @@
   1. Clone the GitHub repository: `git clone
 	https://github.com/mknilesh/CS6220Workspace`
 ### Backend Setup
-2. `cd CS6220WORKSPACE/backend/src`
+2. `cd CS6220WORKSPACE/backend`
 3. `pip install -r requirements.txt` - if you get some dependency errors ignore them for now
 4. `python application.py` - starts Flask server. 
 

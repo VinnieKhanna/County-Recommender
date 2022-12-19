@@ -20,7 +20,7 @@ from operator import itemgetter
 from sklearn.metrics import  pairwise 
 
 # Initialize Flask App
-application = Flask(__name__, template_folder='html')
+application = Flask(__name__, template_folder='build', static_folder='build/static')
 application.config['SECRET_KEY'] = 'secret'
 application.config['JWT_EXPIRATION_DELTA'] = timedelta(days=7)
 
@@ -32,7 +32,7 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # Load county data into memory at runtime to make request time quicker
-csv_path = os.path.join(filedir, "../../dataCollection/States&Counties.csv")
+csv_path = os.path.join(filedir, "../dataCollection/States&Counties.csv")
 states_counties_df = pd.read_csv(csv_path).set_index("State")
 states_counties_dict = states_counties_df.to_dict()["Area_name"]
 state_abbrevs = list(states_counties_dict.keys())
@@ -60,6 +60,12 @@ def get_doc(collection, doc_name):
 
 
 ######### HTTP Routes ############
+
+# Catch all to serve frontend (bundled, transpiled React output)
+@application.route('/', defaults={'path': ''})
+@application.route('/<path:path>')
+def serve(path):
+    return render_template("index.html")
 
 # Compile recommendations per user
 @application.route("/get_recommendations", methods=["GET"])
