@@ -4,10 +4,8 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 import json
-import requests
-from flask import Flask, flash, redirect, render_template, request, Response, session, abort, url_for, jsonify
+from flask import Flask, render_template, request, Response, jsonify
 from flask_jwt import JWT, jwt_required, current_identity
-import ast
 import firebase_admin
 from firebase_admin import credentials, firestore
 import time
@@ -20,9 +18,9 @@ from operator import itemgetter
 from sklearn.metrics import  pairwise 
 
 # Initialize Flask App
-application = Flask(__name__, template_folder='build', static_folder='build/static')
-application.config['SECRET_KEY'] = 'secret'
-application.config['JWT_EXPIRATION_DELTA'] = timedelta(days=7)
+app = Flask(__name__, template_folder='build', static_folder='build/static')
+app.config['SECRET_KEY'] = 'secret'
+app.config['JWT_EXPIRATION_DELTA'] = timedelta(days=7)
 
 filedir = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,10 +30,10 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # Load county data into memory at runtime to make request time quicker
-csv_path = os.path.join(filedir, "../dataCollection/States&Counties.csv")
-states_counties_df = pd.read_csv(csv_path).set_index("State")
-states_counties_dict = states_counties_df.to_dict()["Area_name"]
-state_abbrevs = list(states_counties_dict.keys())
+# csv_path = os.path.join(filedir, "../dataCollection/States&Counties.csv")
+# states_counties_df = pd.read_csv(csv_path).set_index("State")
+# states_counties_dict = states_counties_df.to_dict()["Area_name"]
+# state_abbrevs = list(states_counties_dict.keys())
 
 # Flask authentication functions
 # Firebase users table is indexed/identified by username
@@ -48,7 +46,7 @@ def identity(payload):
     user_id = payload['identity']
     return get_doc(collection = "users", doc_name = user_id)
 
-jwt = JWT(application, authenticate, identity)
+jwt = JWT(app, authenticate, identity)
 
 # Helper to get a firebase document from a collection
 def get_doc(collection, doc_name):
@@ -62,13 +60,13 @@ def get_doc(collection, doc_name):
 ######### HTTP Routes ############
 
 # Catch all to serve frontend (bundled, transpiled React output)
-@application.route('/', defaults={'path': ''})
-@application.route('/<path:path>')
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
 def serve(path):
     return render_template("index.html")
 
 # Compile recommendations per user
-@application.route("/get_recommendations", methods=["GET"])
+@app.route("/get_recommendations", methods=["GET"])
 @jwt_required()
 def get_recommendations():
     start = time.time() # for latency measurement
@@ -101,7 +99,7 @@ def get_recommendations():
 
 
 # Insert user and their prefs into Firebase
-@application.route("/insert_user", methods=["POST"]) 
+@app.route("/insert_user", methods=["POST"]) 
 def insert_user():
     args = request.form.to_dict()
     try:
@@ -120,7 +118,7 @@ def insert_user():
 
 
 # Attach user prefs to existing db user
-@application.route("/insert_user_prefs", methods=["POST"])
+@app.route("/insert_user_prefs", methods=["POST"])
 @jwt_required()
 def insert_user_prefs():
     body = request.json
@@ -132,7 +130,7 @@ def insert_user_prefs():
     return Response(status=200)
 
 # Get user prefs for existing db user (to populate page for returning users)
-@application.route("/get_user_prefs", methods=["GET"])
+@app.route("/get_user_prefs", methods=["GET"])
 @jwt_required()
 def get_user_prefs():
     try:
@@ -143,7 +141,7 @@ def get_user_prefs():
 
 
 # Attach living history to existing db user
-@application.route("/add_living_history", methods=["POST"])
+@app.route("/add_living_history", methods=["POST"])
 @jwt_required()
 def insert_living_history():
     body = request.json
@@ -151,7 +149,7 @@ def insert_living_history():
     return Response(status=200)
 
 # Get living history for existing db user (to populate page for returning users)
-@application.route("/get_living_history", methods=["GET"])
+@app.route("/get_living_history", methods=["GET"])
 @jwt_required()
 def get_living_history():
     try:
@@ -162,7 +160,7 @@ def get_living_history():
 
 
 # Will use this to insert user ratings for their recommendations
-@application.route("/add_ratings", methods=["POST"])
+@app.route("/add_ratings", methods=["POST"])
 @jwt_required()
 def add_rating():
     body = request.json
@@ -179,7 +177,7 @@ def add_rating():
     
     return Response(status=200)
 
-@application.route("/get_ratings", methods=["GET"])
+@app.route("/get_ratings", methods=["GET"])
 @jwt_required()
 def get_ratings():
     try:
@@ -191,13 +189,13 @@ def get_ratings():
 
 # Helper route to get the counties associated with a state abbreviation
 # Helpful for populating Select/Dropdowns on frontend
-@application.route("/get_counties", methods=["GET"])
-def get_counties():
-    state = request.args.get("state")
-    if state is None:
-        return Response("Missing required query param 'state'", status=422)
-    counties = states_counties_dict[state]
-    return jsonify(ast.literal_eval(counties))
+# @app.route("/get_counties", methods=["GET"])
+# def get_counties():
+#     state = request.args.get("state")
+#     if state is None:
+#         return Response("Missing required query param 'state'", status=422)
+#     counties = states_counties_dict[state]
+#     return jsonify(ast.literal_eval(counties))
 
 
 def euclidean_distance(vector1,vector2):
@@ -436,5 +434,5 @@ if __name__ == "__main__":
     # get_intralist_similarities(scenario4)
     # get_intralist_similarities(scenario5)
     
-    application.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=5000, debug=False)
 
